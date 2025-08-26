@@ -1,88 +1,92 @@
-import SwiftUI
+// ItemRowView.swift
 
 import SwiftUI
 
 struct ItemRowView: View {
-    var item: Item
+    var item: Item 
     var onDecrement: () -> Void
     var onIncrement: () -> Void
     
-    private var barColor: Color {
-        switch item.percentageLeft {
-        case ..<0.25: return .red
-        case ..<0.5: return .yellow
-        default: return .green
-        }
-    }
-    
-    private var expirationTextColor: Color {
-        if let days = item.daysUntilExpiration {
-            if days < 0 {
-                return .red
-            } else if days == 0 {
-                return .red
-            } else if days <= 7 {
-                return .orange
-            } else {
+    var body: some View {
+        let tone = SharedTheme.progressColor(percent: item.percentageLeft)
+        let expColor = SharedTheme.expirationTextColor(days: item.daysUntilExpiration)
+        let dateText: String = {
+            switch item.dateMode {
+            case .expiration:
+                if let d = item.expirationDate { return SharedFormatters.mediumDate.string(from: d) }
+            case .purchase:
+                if let d = item.purchaseDate { return SharedFormatters.mediumDate.string(from: d) }
+                
+            case .none:
+                return ""}
+            return ""
+        }()
+        let daysText: String = {
+            switch item.dateMode {
+            case .expiration:
+                let label = SharedTheme.expirationLabel(days: item.daysUntilExpiration)
+                return label.isEmpty ? "" : label
+            case .purchase:
+                if let n = item.daysSincePurchase {
+                    return n == 0 ? "Purchased today" : "\(n) days ago"
+                }
+                return ""
+            case .none:
+                return ""
+            }
+        }()
+        let textColor: Color = {
+            switch item.dateMode {
+            case .expiration:
+                return SharedTheme.expirationTextColor(days: item.daysUntilExpiration)
+            case .purchase, .none:
                 return .gray
             }
-        }
-        return .gray
-    }
-
-    
-    private var expirationText: String {
-        if let days = item.daysUntilExpiration {
-            if days < 0 {
-                return "Expired"
-            } else if days == 0 {
-                return "Expires today"
-            } else {
-                return "\(days) days left"
-            }
-        }
-        return ""
-    }
-    
-    private var formattedDate: String {
-        if let expDate = item.expirationDate {
-            let formatter = DateFormatter()
-            formatter.dateStyle = .medium
-            return formatter.string(from: expDate)
-        }
-        return ""
-    }
-    
-    var body: some View {
+        }()
         HStack {
             VStack(alignment: .leading, spacing: 4) {
                 Text(item.name)
                     .font(.headline)
-                    .foregroundColor(expirationTextColor)
-
-                ProgressView(value: item.percentageLeft)
-                    .progressViewStyle(LinearProgressViewStyle(tint: barColor))
+                    .foregroundColor(expColor)
                 
-                if item.expirationDate != nil {
-                    HStack {
-                        Text(formattedDate)
-                            .font(.caption)
-                            .foregroundColor(.gray)
-                        
-                        if !expirationText.isEmpty {
-                            Text("· \(expirationText)")
+                ProgressView(value: item.percentageLeft)
+                    .tint(tone)
+                
+                if !dateText.isEmpty || !daysText.isEmpty {
+                    HStack(spacing: 6) {
+                        let prefix = item.dateMode == .expiration ? "exp:" : "purchased:"
+                        if !dateText.isEmpty {
+                            Text("\(prefix) \(dateText)")
                                 .font(.caption)
-                                .foregroundColor(expirationTextColor)
+                                .foregroundColor(textColor)
+                        }
+                        if !dateText.isEmpty && !daysText.isEmpty {
+                            Text("·")
+                                .font(.caption)
+                                .foregroundColor(textColor)
+                        }
+                        if !daysText.isEmpty {
+                            Text(daysText)
+                                .font(.caption)
+                                .foregroundColor(textColor)
                         }
                     }
                 }
-
+                
             }
             
             Spacer()
             
-            Text("\(item.count)\(item.unit != nil ? " \(item.unit!)" : "")")
-                .font(.title2)
+            VStack(alignment: .trailing, spacing: 2) {
+                Text("\(item.count)")
+                    .font(.title2).bold()
+                    .monospacedDigit()
+                if let unit = item.unit, !unit.isEmpty {
+                    Text(unit)
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+            }
             
             // Buttons side by side with clear hit areas
             VStack(spacing: 20) {
@@ -105,7 +109,7 @@ struct ItemRowView: View {
             .padding(.leading, 8)
         }
         .padding(.vertical, 6)
-        .buttonStyle(BorderlessButtonStyle()) // avoids List row hijacking taps
+        .buttonStyle(BorderlessButtonStyle())
     }
 }
 
