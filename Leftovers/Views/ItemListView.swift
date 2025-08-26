@@ -57,7 +57,7 @@ struct ItemListView: View {
                 }
                 .onDelete(perform: viewModel.deleteItem)
             }
-            .navigationTitle("The Pantry")
+            .navigationTitle("My Pantry")
             .toolbar {
                 Button(action: { showingAddItem = true }) {
                     Image(systemName: "plus")
