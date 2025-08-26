@@ -3,11 +3,11 @@ Stop losing track of food and supplies. Leftovers keeps a clear inventory with s
 
 ##### Leftovers app screenshot
 <p align="center">
-  <img src="Screenshots/S1.png" width="100" />
-  <img src="Screenshots/S2.png" width="100" /> 
-  <img src="Screenshots/S3.png" width="100" />
-  <img src="Screenshots/S4.png" width="100" />
-  <img src="Screenshots/S5.png" width="100" />
+  <img src="Screenshots/S1.png" width="200" />
+  <img src="Screenshots/S2.png" width="200" /> 
+  <img src="Screenshots/S3.png" width="200" />
+  <img src="Screenshots/S4.png" width="200" />
+  <img src="Screenshots/S5.png" width="200" />
 </p>
 
 ## Why this helps
