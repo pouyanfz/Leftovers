@@ -13,8 +13,11 @@ struct AddItemView: View {
     @State private var name = ""
     @State private var count = ""
     @State private var unit = ""
-    @State private var hasExpirationDate = false
+    
+    @State private var mode: DateMode = .none
     @State private var expirationDate = Date()
+    @State private var purchaseDate = Date()
+    
     
     var body: some View {
         NavigationView {
@@ -24,20 +27,38 @@ struct AddItemView: View {
                     .keyboardType(.numberPad)
                 TextField("Unit (optional)", text: $unit)
                 
-                Toggle("Set expiration date", isOn: $hasExpirationDate)
-                if hasExpirationDate {
-                    DatePicker("Expiration Date", selection: $expirationDate, displayedComponents: .date)
+                Picker("Track by", selection: $mode) {
+                    Text("Expiration").tag(DateMode.expiration)
+                    Text("Purchase").tag(DateMode.purchase)
+                    Text("None").tag(DateMode.none)
+                    
                 }
+                .pickerStyle(.segmented)
+                
+                switch mode {
+                case .expiration:
+                    DatePicker("Expiration Date", selection: $expirationDate, displayedComponents: .date)
+                case .purchase:
+                    DatePicker("Purchase Date", selection: $purchaseDate, displayedComponents: .date)
+                case .none:
+                    EmptyView()
+                }
+                
             }
             .navigationTitle("Add Item")
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Save") {
                         if let countInt = Int(count), !name.isEmpty {
+                            let exp = mode == .expiration ? expirationDate : nil
+                            let buy = mode == .purchase ? purchaseDate : nil
                             viewModel.addItem(
                                 name: name,
                                 count: countInt,
-                                expirationDate: hasExpirationDate ? expirationDate : nil
+                                unit: unit.isEmpty ? nil : unit,
+                                expirationDate: exp,
+                                purchaseDate: buy,
+                                dateMode: mode
                             )
                             dismiss()
                         }
